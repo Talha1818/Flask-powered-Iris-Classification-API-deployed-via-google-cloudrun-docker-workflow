@@ -1,0 +1,18 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# VS Code settings
+.vscode/
+
+# Virtual environment
+env/
+
+# Flask instance folder
+instance/
+
+# Test cache
+.pytest_cache/
+
+# Local env variables
+.env
