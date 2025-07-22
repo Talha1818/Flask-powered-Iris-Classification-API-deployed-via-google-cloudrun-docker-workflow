@@ -1,69 +1,62 @@
-🌸 Iris ML Prediction API — Flask + Google Cloud (GCP)
-A lightweight Flask-based API for predicting Iris flower species using a pre-trained Logistic Regression model. This project utilizes the famous Iris dataset and is containerized for seamless deployment on Google Cloud Run using Docker and GitHub Actions.
+# 🌸 Iris ML Prediction API — Flask + Google Cloud (GCP)
 
-🚀 Tech Stack
-Language: Python
+A lightweight Flask-based API for predicting Iris flower species using a pre-trained Logistic Regression model. This project utilizes the famous Iris dataset and is containerized for seamless deployment on Google Cloud Run using Docker and GitHub Actions**.
 
-Framework: Flask
+---
 
-ML Library: Scikit-learn
+## 🚀 Overview
 
-Dataset: Iris (sklearn.datasets)
+- **Language**: Python
+- **Framework**: Flask
+- **ML Library**: Scikit-learn
+- **Dataset**: Iris (from `sklearn.datasets`)
+- **Model**: Logistic Regression
+- **Deployment**: Dockerized and ready for AWS ECS
 
-Model: Logistic Regression
+---
 
-Deployment: Docker + GitHub Actions → Google Cloud Run
+## 📊 Dataset Info
 
-📊 Dataset Overview
-Samples: 150
+- **Rows**: 150
+- **Columns**: 4
+- **Features**:
+  - Sepal length (cm)
+  - Sepal width (cm)
+  - Petal length (cm)
+  - Petal width (cm)
+- **Target Classes**:
+  - setosa
+  - versicolor
+  - virginica
 
-Features:
+---
 
-Sepal length (cm)
+## 🔌 API Endpoints
 
-Sepal width (cm)
+### `GET /`
+Returns a welcome message and overview of the Iris dataset.
 
-Petal length (cm)
+### `GET /predict`
+Predicts the Iris flower class based on query parameters.
 
-Petal width (cm)
+#### Example Request: (/predict?sepal_length=5.1&sepal_width=3.5&petal_length=1.4&petal_width=0.2)
 
-Target Classes:
 
-setosa
-
-versicolor
-
-virginica
-
-🔌 API Endpoints
-GET /
-Returns basic information and dataset stats.
-
-GET /predict
-Predicts the Iris flower species using query parameters.
-
-Example Request
-bash
-Copy
-Edit
-/predict?sepal_length=5.1&sepal_width=3.5&petal_length=1.4&petal_width=0.2
-Example Response
-json
-Copy
-Edit
+#### Example Response:
+```json
 {
   "prediction": 0,
   "class_name": "setosa"
 }
+
 ✅ Deployment Guide — Google Cloud Run + GitHub Actions
 1. 📁 Project Structure
 Ensure your repo contains:
-
-bash
 app.py
 requirements.txt
 Dockerfile
 .github/workflows/google-cloudrun-docker.yml
+
 2. ✅ Enable Required GCP APIs
 Go to Google Cloud Console and enable:
 
@@ -76,12 +69,10 @@ IAM Credentials API: iamcredentials.googleapis.com
 3. 🏷️ Create Artifact Registry
 Create a Docker repository in Artifact Registry. Example:
 
-makefile
-Copy
-Edit
 Region: us-central1
 Name: iris-docker-repo
 Format: Docker
+
 4. 🔑 Create and Download GCP Service Account Key
 Go to IAM & Admin > Service Accounts
 
@@ -105,9 +96,6 @@ Name: GOOGLE_CREDENTIALS
 Value: Paste contents of gcp-key.json
 
 6. 🐳 Dockerfile Example
-Dockerfile
-Copy
-Edit
 # Use official Python image
 FROM python:3.10-slim
 
@@ -125,9 +113,7 @@ CMD ["python", "app.py"]
 7. 🧠 GitHub Actions Workflow
 .github/workflows/google-cloudrun-docker.yml
 
-yaml
-Copy
-Edit
+
 name: 'Build and Deploy to Cloud Run'
 
 on:
@@ -178,5 +164,6 @@ jobs:
 
       - name: 'Show Service URL'
         run: echo ${{ steps.deploy.outputs.url }}
+
 ✨ Result
 Once deployed, you’ll get a public URL (e.g., https://iris-flask-api-xxxx.a.run.app) where your ML model is hosted via Flask on Cloud Run, ready to receive real-time prediction requests.
