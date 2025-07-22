@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
 import numpy as np
+import os
 
 app = Flask(__name__)
 
@@ -19,7 +20,7 @@ def home():
     class_names = ', '.join(iris.target_names)
 
     return (
-        f"Flask-powered Iris Classification API deployed via AWS ECS — Muhammad Talha\n\n"
+        f"Flask-powered Iris Classification API deployed via Google Cloud Run — Muhammad Talha\n\n"
         f"📊 Dataset Overview:\n"
         f"- Rows: {num_rows}\n"
         f"- Columns: {num_cols}\n"
@@ -27,12 +28,10 @@ def home():
         f"- Target Classes: {class_names}\n"
     )
 
-
 # Predict route
 @app.route('/predict', methods=['GET'])
 def predict():
     try:
-        # Get values from URL query parameters
         sepal_length = float(request.args.get('sepal_length'))
         sepal_width = float(request.args.get('sepal_width'))
         petal_length = float(request.args.get('petal_length'))
@@ -50,6 +49,7 @@ def predict():
     except (TypeError, ValueError):
         return jsonify({'error': 'Invalid or missing query parameters.'}), 400
 
-
+# Listen on dynamic Cloud Run port
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(debug=True, host="0.0.0.0", port=port)
