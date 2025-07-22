@@ -1,168 +1,182 @@
-# 🌸 Iris ML Prediction API — Flask + AWS ECS
+🌸 Iris ML Prediction API — Flask + Google Cloud (GCP)
+A lightweight Flask-based API for predicting Iris flower species using a pre-trained Logistic Regression model. This project utilizes the famous Iris dataset and is containerized for seamless deployment on Google Cloud Run using Docker and GitHub Actions.
 
-A lightweight Flask-based API for predicting Iris flower species using a pre-trained Logistic Regression model. The project uses the famous Iris dataset and is containerized for deployment on **AWS Elastic Container Service (ECS)**.
+🚀 Tech Stack
+Language: Python
 
----
+Framework: Flask
 
-## 🚀 Overview
+ML Library: Scikit-learn
 
-- **Language**: Python
-- **Framework**: Flask
-- **ML Library**: Scikit-learn
-- **Dataset**: Iris (from `sklearn.datasets`)
-- **Model**: Logistic Regression
-- **Deployment**: Dockerized and ready for AWS ECS
+Dataset: Iris (sklearn.datasets)
 
----
+Model: Logistic Regression
 
-## 📊 Dataset Info
+Deployment: Docker + GitHub Actions → Google Cloud Run
 
-- **Rows**: 150
-- **Columns**: 4
-- **Features**:
-  - Sepal length (cm)
-  - Sepal width (cm)
-  - Petal length (cm)
-  - Petal width (cm)
-- **Target Classes**:
-  - setosa
-  - versicolor
-  - virginica
+📊 Dataset Overview
+Samples: 150
 
----
+Features:
 
-## 🔌 API Endpoints
+Sepal length (cm)
 
-### `GET /`
-Returns a welcome message and overview of the Iris dataset.
+Sepal width (cm)
 
-### `GET /predict`
-Predicts the Iris flower class based on query parameters.
+Petal length (cm)
 
-#### Example Request: (/predict?sepal_length=5.1&sepal_width=3.5&petal_length=1.4&petal_width=0.2)
+Petal width (cm)
 
+Target Classes:
 
-#### Example Response:
-```json
+setosa
+
+versicolor
+
+virginica
+
+🔌 API Endpoints
+GET /
+Returns basic information and dataset stats.
+
+GET /predict
+Predicts the Iris flower species using query parameters.
+
+Example Request
+bash
+Copy
+Edit
+/predict?sepal_length=5.1&sepal_width=3.5&petal_length=1.4&petal_width=0.2
+Example Response
+json
+Copy
+Edit
 {
   "prediction": 0,
   "class_name": "setosa"
 }
+✅ Deployment Guide — Google Cloud Run + GitHub Actions
+1. 📁 Project Structure
+Ensure your repo contains:
 
-## ✅ CI/CD with GitHub Actions
+bash
+app.py
+requirements.txt
+Dockerfile
+.github/workflows/google-cloudrun-docker.yml
+2. ✅ Enable Required GCP APIs
+Go to Google Cloud Console and enable:
 
-```yaml
-name: Flask Test CI
+Cloud Run: run.googleapis.com
+
+Artifact Registry: artifactregistry.googleapis.com
+
+IAM Credentials API: iamcredentials.googleapis.com
+
+3. 🏷️ Create Artifact Registry
+Create a Docker repository in Artifact Registry. Example:
+
+makefile
+Copy
+Edit
+Region: us-central1
+Name: iris-docker-repo
+Format: Docker
+4. 🔑 Create and Download GCP Service Account Key
+Go to IAM & Admin > Service Accounts
+
+Create a new account or select an existing one
+
+Assign the following roles:
+
+Artifact Registry Administrator
+
+Cloud Run Admin
+
+Click Create Key → JSON, then download it as gcp-key.json
+
+5. 🔐 Add Secret to GitHub
+Go to Repo Settings → Secrets and Variables → Actions
+
+Add a new secret:
+
+Name: GOOGLE_CREDENTIALS
+
+Value: Paste contents of gcp-key.json
+
+6. 🐳 Dockerfile Example
+Dockerfile
+Copy
+Edit
+# Use official Python image
+FROM python:3.10-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy contents
+COPY . /app
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Run the app
+CMD ["python", "app.py"]
+7. 🧠 GitHub Actions Workflow
+.github/workflows/google-cloudrun-docker.yml
+
+yaml
+Copy
+Edit
+name: 'Build and Deploy to Cloud Run'
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v3
-
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-
-    - name: 📦 Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest
-
-    - name: 🧪 Run unit tests
-      run: PYTHONPATH=. pytest tests/
-
-### "enableFaultInjection" is not part of standard ECS task definitions.
-
-## ✅ CI/CD with GitHub Actions - Login in ECS
-
-```yaml
-name: "CI/CD - Flask Test, Build & Deploy to ECS"
-
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches:
+      - master
 
 env:
-  AWS_REGION: us-west-1
-  ECR_REPOSITORY: talha-ecr-repositry
-  ECS_SERVICE: muhammad-talha-task-service-2fccmkqn 
-  ECS_CLUSTER: talha-cluster
-  ECS_TASK_DEFINITION: .aws/taskdef.json
-  CONTAINER_NAME: muhammad-talha-container
-
-permissions:
-  contents: read
+  PROJECT_ID: 'your-project-id'
+  REGION: 'us-central1'
+  SERVICE: 'iris-flask-api'
+  REPO_NAME: 'iris-docker-repo'
 
 jobs:
-  build-test-deploy:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: 'ubuntu-latest'
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      - name: 'Checkout'
+        uses: actions/checkout@v4
 
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-    - name: 📦 Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest
+      - name: 'Configure Docker for GCP'
+        run: |
+          gcloud auth configure-docker "${{ env.REGION }}-docker.pkg.dev"
 
-    - name: 🧪 Run tests
-      run: |
-        PYTHONPATH=. pytest tests/
+      - name: 'Build and Push Docker Image'
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE }}:${{ github.sha }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
 
-    - name: 🔐 Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+      - name: 'Deploy to Cloud Run'
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: '${{ env.SERVICE }}'
+          region: '${{ env.REGION }}'
+          image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE }}:${{ github.sha }}'
 
-    - name: 🔐 Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: 🐳 Build, tag, and push image to Amazon ECR
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-    - name: 🧩 Render ECS task definition with new image
-      id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: ${{ env.ECS_TASK_DEFINITION }}
-        container-name: ${{ env.CONTAINER_NAME }}
-        image: ${{ steps.build-image.outputs.image }}
-
-    - name: 🚀 Deploy to ECS
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: ${{ env.ECS_SERVICE }}
-        cluster: ${{ env.ECS_CLUSTER }}
-        wait-for-service-stability: true
-
+      - name: 'Show Service URL'
+        run: echo ${{ steps.deploy.outputs.url }}
+✨ Result
+Once deployed, you’ll get a public URL (e.g., https://iris-flask-api-xxxx.a.run.app) where your ML model is hosted via Flask on Cloud Run, ready to receive real-time prediction requests.
