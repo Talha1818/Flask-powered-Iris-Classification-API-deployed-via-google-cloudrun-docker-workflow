@@ -38,7 +38,7 @@ env:
   PROJECT_ID: 'egypt-client-gmail' # TODO: update to your Google Cloud project ID
   REGION: 'us-central1' # TODO: update to your region
   SERVICE: 'my-flask-app' # TODO: update to your service name
-  REPO_NAME: 'gh-demo'
+  REPO_NAME: 'gh-demo' # for artifact repositry name
 #   WORKLOAD_IDENTITY_PROVIDER: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider' # TODO: update to your workload identity provider
 
 jobs:
