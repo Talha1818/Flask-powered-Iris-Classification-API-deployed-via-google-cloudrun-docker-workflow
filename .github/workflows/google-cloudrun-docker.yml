@@ -80,7 +80,7 @@ jobs:
     #       registry: '${{ env.REGION }}-docker.pkg.dev'
       - name: 'Docker Auth'
         run: |-
-          gcloud auth configure-docke "${{ env.REGION }}-docker.pkg.dev"
+          gcloud auth configure-docker "${{ env.REGION }}-docker.pkg.dev"
 
 
       - name: 'Build and Push Container'
