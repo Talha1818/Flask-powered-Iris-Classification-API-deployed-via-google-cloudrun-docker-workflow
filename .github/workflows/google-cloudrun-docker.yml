@@ -20,7 +20,8 @@
 #    permissions on Google Cloud:
 #
 #    - Artifact Registry Administrator (roles/artifactregistry.admin)
-#    - Cloud Run Developer (roles/run.developer)
+#    - Cloud Run Admin (roles/run.developer)
+#    - Service Account User
 #
 #    You can learn more about setting IAM permissions at
 #    https://cloud.google.com/iam/docs/manage-access-other-resources
@@ -35,7 +36,7 @@ on:
       - master
 
 env:
-  PROJECT_ID: 'egypt-client-gmail' # TODO: update to your Google Cloud project ID
+  PROJECT_ID: 'my-demo-app-466706' # TODO: update to your Google Cloud project ID
   REGION: 'us-central1' # TODO: update to your region
   SERVICE: 'my-flask-app' # TODO: update to your service name
   REPO_NAME: 'gh-demo' # for artifact repositry name
@@ -53,16 +54,6 @@ jobs:
       - name: 'Checkout'
         uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # actions/checkout@v4
 
-      # Configure Workload Identity Federation and generate an access token.
-      #
-      # See https://github.com/google-github-actions/auth for more options,
-      # including authenticating via a JSON credentials file.
-    #   - id: 'auth'
-    #     name: 'Authenticate to Google Cloud'
-    #     uses: 'google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2' # google-github-actions/auth@v2
-    #     with:
-    #       workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
-
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2' # google-github-actions/auth@v2
@@ -71,14 +62,6 @@ jobs:
           
 
       # BEGIN - Docker auth and build
-      #
-      # If you already have a container image, you can omit these steps.
-    #   - name: 'Docker Auth'
-    #     uses: 'docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567' # docker/login-action@v3
-    #     with:
-    #       username: 'oauth2accesstoken'
-    #       password: '${{ steps.auth.outputs.auth_token }}'
-    #       registry: '${{ env.REGION }}-docker.pkg.dev'
       - name: 'Docker Auth'
         run: |-
           gcloud auth configure-docker "${{ env.REGION }}-docker.pkg.dev"
